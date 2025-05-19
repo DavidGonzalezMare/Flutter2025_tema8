@@ -1,0 +1,436 @@
+# Unidad 8. Persistencia en la nube.
+
+
+Como vimos en el tema anterior, la persistencia de los datos es una pieza fundamental en el desarrollo de aplicaciones, y en el mismo desarrollamos el almacenamiento local haciendo uso de la librería `Floor`.
+
+La persistencia en la nube se refiere al almacenamiento y gestión de datos en servidores remotos accesibles a través de internet. Esta tecnología permite a las aplicaciones almacenar datos de manera segura y escalable, eliminando la necesidad de infraestructura física local. Los servicios de persistencia en la nube ofrecen ventajas como alta disponibilidad, recuperación ante desastres, y acceso global, lo que facilita la colaboración y el acceso a la información desde cualquier lugar.
+
+En este tema vamos a trabajar con `Supabase`, que es una plataforma de código abierto que proporciona una solución completa para la persistencia en la nube, incluyendo bases de datos, autenticación y capacidades en tiempo real. 
+
+![SupabaseFlutter](./images/imagen01.jpg)
+
+[1. Creación App Ejemplo Flutter Supabase](#_apartado1)
+
+[2. App Planetas](#_apartado2)
+
+[3. Modelo. Clase Planeta](#_apartado3)
+
+[4. Data Source](#_apartado4)
+
+[5. Repositorio y Provider](#_apartado5)
+
+[6. Interfaz](#_apartado6)
+
+
+# <a name="_apartado1"></a>1. Creación App Ejemplo Flutter Supabase
+
+[Supabase] (https://supabase.com/) es una plataforma de código abierto que proporciona una solución completa para el desarrollo de aplicaciones backend. Ofrece una serie de servicios integrados que incluyen bases de datos, autenticación, almacenamiento y capacidades en tiempo real, todo gestionado a través de una interfaz intuitiva y fácil de usar.
+
+Supabase se basa en PostgreSQL, una de las bases de datos relacionales más robustas y populares, lo que garantiza un rendimiento y una fiabilidad excepcionales. Además, su enfoque en la simplicidad y la accesibilidad lo hace ideal tanto para desarrolladores principiantes como para aquellos con más experiencia.
+
+Entre las características destacadas de Supabase se encuentran:
+
+- Autenticación y Autorización: Gestión de usuarios y permisos de manera segura.
+  
+- API en Tiempo Real: Sincronización de datos en tiempo real entre el cliente y el servidor
+- Almacenamiento de Archivos: Solución integrada para almacenar y gestionar archivos.
+- Fácil Integración: Compatible con múltiples frameworks y lenguajes de programación, incluyendo Flutter, React, y más.
+
+De manera resumida estos podrían ser los pasos para utilizar **Supabase** desde una aplicación **Flutter**:
+
+- Registro en Supabase.
+- Creación de un Proyecto: Una vez registrado, crea un nuevo proyecto en el panel de Supabase.
+- Crear las tablas de la BD.
+- Credenciales: Copia la URL del proyecto y la clave API (anon key).
+- Añadir dependencias en Flutter.
+- Inicializar Supabase en la aplicación.
+- Realizar operaciones CRUD utilizando el cliente Supabase.
+
+Vamos a ver en este apartado los pasos para registrarnos, crear el proyecto y crear la tabla para utilizar a continuación en la aplicación.
+
+## Registro en Supabase
+
+Tenemos al ir a la web de [Supabase] (https://supabase.com/) pulsaremos *Sign in* o *Start your project* y bien crear un nuevo usuario a partir de un correo, o bien entrar con nuestra cuenta de Github:
+
+![SignIn](./images/imagen02.png)
+
+Deberemos crear **la primera vez** una organización:
+
+![Organizacion](./images/imagen03.png)
+
+Y ahora crearemos un nuevo proyecto (también la primera vez). Este proyecto contendrá nuestra BD:
+
+![SignIn](./images/imagen04.png)
+
+Una vez tengamos nuestro proyecto creado vamos a seguir esta guía rápida del propio Supabase en la que nos dirige a través de la creación de un proyecto flutter con una tabla Postgres en Supabase:
+
+[Inicio Flutter Supabase](https://supabase.com/docs/guides/getting-started/quickstarts/flutter)
+
+
+# <a name="_apartado1"></a>2. App Planetas
+
+En este apartado vamos a adaptar la app planetas que trabajamos en el tema anterior de manera que dejemos de trabajar con la librería Floor en una BD local y lo hagamos con una tabla en la BD en la nube que hemos creado con anterioridad.
+
+## Creación de la tabla Planetas
+
+Para crear una nueva tabla en nuestra BD de Supabase tenemos dos opciones. Podemos ir a **Table Editor** donde crearíamos la tabla de modo visual o bien a **SQL Editor** donde podemos introducir una sentencia SQL que nos crearía la tabla:
+
+![Table SQL](./images/imagen05.png)
+
+Si hacemos la tabla mediante el Table Editor tendríamos:
+
+![Table Editor 1](./images/imagen06.png)
+
+como vemos de momento vamos a quitar el **Row Level Security (RLS)** que nos permite hacer cambios en los registros de la tabla sin ningún tipo de restricción de usuario (esto lo tendremos que cambiar más adelante por seguridad).
+
+Y estos serían los dos únicos campos que va a tener mi tabla:
+
+![Table Editor 2](./images/imagen07.png)
+
+También podríamos crear la tabla desde **SQL Editor** con el siguiente código:
+
+```sql
+create table public.planets (
+  id bigint generated by default as identity not null,
+  nombre text null,
+  constraint planets_pkey primary key (id)
+) TABLESPACE pg_default;
+```
+
+## Primeros cambios en la aplicación
+
+Para realizar este apartado nos vamos a apoyar en el ejercicio de la app de planetas que realizamos en el tema 7. Podemos hacer una copia del mismo.
+
+En primer lugar vamos a **eliminar** aquellos ficheros y dependencias que no vamos a utilizar.
+
+Podemos eliminar los siguientes ficheros de la carpeta `model`: `database.dart`, `database.g.dart` y `planeta.dao.dart`, ya que no vamos a trabajar con la BD local.
+
+Mantenemos el resto de ficheros (`planeta.dart, favoritos_respository.dart, favoritos_provider.dart`...).
+
+Además, en fichero `pubspec.yaml` eliminaremos las líneas con las dependencias  `floor`, `floor_generator` y `build_runner`.
+
+E instalaremos la librería `supabase_flutter`:
+
+```
+flutter pub add supabase_flutter
+```
+
+# <a name="_apartado3"></a>3. Modelo. Clase Planeta
+
+Empezamos a cambiar el código de la aplicación para adaptarlo a Supabase respecto a lo que hacíamos con Floor.
+
+En primer lugar, cambiamos la clase `/model/planeta.dart`, ya que deja de ser una entidad de Floor, pasando a ser una clase que tendrá los campos de la tabla `planets` y le añadimos las funciones que mapean y permiten leer y escribir un registro en esa tabla:
+
+```dart
+
+class Planeta {
+  final int? id;
+  final String nombre;
+
+  Planeta({this.id, required this.nombre});
+
+  factory Planeta.fromMap(Map<String, dynamic> map) {
+    return Planeta(
+      id: map['id'],
+      nombre: map['nombre'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'nombre': nombre,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) {
+    // Comparamos que sean de la misma clase y que el
+    // valor de las propiedades sea el mismo
+    return other is Planeta && other.id == id && other.nombre == nombre;
+  }
+}
+```
+
+# <a name="_apartado4"></a>4. Data Source
+
+Vamos a crear en este apartado el código que trabajará con la fuente de datos, en este caso la tabla `planets` de nuestra BD de `Supabase`.
+
+Creamos una carpeta llamada `datasource` y dentro de la misma el fichero `datasource.dart`:
+
+```dart
+import 'package:planetas/model/planeta.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class DataSource {
+  final SupabaseClient client;
+  final String _tableName = 'planets';
+
+  DataSource(this.client);
+
+  Future<List<Planeta>> getAllPlanets() async {
+    final response = await client.from(_tableName).select();
+    
+    return (response as List)
+        .map((user) => Planeta.fromMap(user))
+        .toList();
+  }
+
+  Future<void> insertPlanet(Planeta planeta) async {
+    final response =
+        await client.from(_tableName).insert(planeta.toMap());
+
+    if (response != null) {
+      throw response.error!;
+    }
+  }
+
+  Future<void> deletePlanet(int id) async {
+    final response = await client
+        .from(_tableName) 
+        .delete() // Método para eliminar
+        .eq('id', id); // Ejecutar la consulta
+
+    if (response != null) {
+      throw response.error!;
+    }
+  }
+}
+```
+
+En este fichero tenemos un cliente de Supabase que se inicializará en el provider (al iniciar la aplicación), y que nos permitirá realizar las operaciones de lectura, inserción y borrado sobre la tabla `planets` (`_tableName`). 
+
+
+# <a name="_apartado5"></a>5. Repositorio y Provider
+
+Modificamos levemente `favoritos_repository.dart`, ya que ahora no conectamos con la BD local de Floor, sino con la BD del cliente de Supabase:
+
+```dart
+import 'package:planetas/datasource/datasource.dart';
+import 'package:planetas/model/planeta.dart';
+
+class FavoritosRepository {
+  DataSource? _dataSource; // Referencia al DataSource
+
+  FavoritosRepository._(); // Constructor privado
+
+  // Instancia única del repositorio. La podemos crear directamente
+  // en la inicialización
+  static final FavoritosRepository _instance =
+      FavoritosRepository._();
+
+  // Quan se'ns demane el repositori retornem la instància.
+  factory FavoritosRepository() {
+    return _instance;
+  }
+
+  // Connexión a la base de datos
+  Future<void> connectaDB() async {
+    if (_dataSource == null) {
+      // Inicializamos la conexión a la base de datos
+      await Supabase.initialize(
+        url: 'https://poneraquilaurlvuestra.supabase.co',
+        anonKey:
+            'poner aqui vuestra clave anon',
+      );
+      _dataSource = DataSource(Supabase.instance.client);
+    }
+  }
+
+  // Añadimos como métodos del repositorio los propios de la clase DAO
+  Future<List<Planeta>>? findAll() {
+    return _dataSource?.getAllPlanets();
+  }
+
+  Future<void> insertPlanet(Planeta planeta) {
+    return _dataSource?.insertPlanet(planeta) ?? Future.value();
+  }
+
+  Future<void> deletePlanet(Planeta planeta) {
+    return _dataSource?.deletePlanet(planeta.id??-1) ?? Future.value();
+  }
+}
+```
+
+Como vemos cambia la fuente de datos que utilizamos, pero las funciones públicas siguen siendo las mismas que teníamos con Floor: `conectaDB`, `findAll`, `insertPlanet` y `deletePlanet`.
+
+Y por tanto el Provider que tenemos en `/provider/favoritos_provider.dart` apenas cambia. 
+Sí debemos tener en cuenta que en esta ocasión vamos a utilizar el `findAll` con un `Future` en vez de con un `Stream`:
+
+```dart
+import 'package:flutter/foundation.dart';
+import 'package:planetas/model/planeta.dart';
+import 'package:planetas/repository/favoritos_repository.dart';
+
+class FavoritosProvider with ChangeNotifier {
+  final FavoritosRepository _repository = FavoritosRepository();
+
+  // Lista de favoritos para la carga inicial
+  // Nos servirá para emitir la primera notificación de cambio de estado
+  List<Planeta> _favoritos = [];
+
+  FavoritosProvider() {
+    // En el constructor hacemos una carga de los favoritos
+    _carregaFavoritos();
+  }
+
+  Future<void> _carregaFavoritos() async {
+    // Esperamos a tener una conexión lista en la BD
+    await _repository.connectaDB();
+
+    // Obtenemos el primer elementos del Stream que obtenemos con un findall
+
+    final listaFavoritos = await _repository.findAll();
+    _favoritos = listaFavoritos!;
+    notifyListeners();
+  }
+
+  Future<List<Planeta>>? findAll() {
+    return _repository.findAll();
+  }
+
+  Future<void> insertPlanet(Planeta planeta) async {
+    await _repository.insertPlanet(planeta);
+    notifyListeners();
+  }
+
+  Future<void> deletePlanet(Planeta planeta) async {
+    await _repository.deletePlanet(planeta);
+    notifyListeners();
+  }
+}
+```
+
+# <a name="_apartado6"></a>6. Interfaz de usuario
+
+La interfaz de usuario queda prácticamente igual que la que hicimos en el ejemplo del tema anterior, aunque cambiamos el `StreamBuilder` por un `FutureBuilder`, ya que hicimos eso con el `findAll`.
+
+Fichero `/screens/lista_planetas_screen.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:planetas/model/planeta.dart';
+
+import 'package:planetas/provider/favoritos_provider.dart';
+import 'package:provider/provider.dart';
+
+class ListaPlanetas extends StatelessWidget {
+  ListaPlanetas({super.key});
+
+  // Declarem una llista estàtica de planetes
+  // En la base de dades, només guardarem els favorits
+  final List<Planeta> planetas = [
+    Planeta(id: 1, nombre: "Tatooine"),
+    Planeta(id: 2, nombre: "Yavin"),
+    Planeta(id: 3, nombre: "Bespin"),
+    Planeta(id: 4, nombre: "Dagobah"),
+    Planeta(id: 5, nombre: "Endor"),
+    Planeta(id: 6, nombre: "Nevarro"),
+    Planeta(id: 7, nombre: "Corellia"),
+    Planeta(id: 8, nombre: "Mandalore"),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // Definim la referència al Provider
+    var favoritosProvider = Provider.of<FavoritosProvider>(context);
+
+    return FutureBuilder<List<Planeta>>(
+      future: favoritosProvider.findAll(),
+      builder: (context, snapshot) {
+        debugPrint(snapshot.connectionState.toString());
+        if (snapshot.hasData) {
+          // El snapshot contendrá la lista de planetas favorita
+
+          // Construimos la lista de planetas, con un ListView Builder
+          // Cada item será un ListTile, que contendrá como "trailing"
+          // una estrella con la que podremos interactuar para marcar o
+          // desmarcar el planeta como favorito.
+          return ListView.builder(
+              itemCount: planetas.length,
+              itemBuilder: (BuildContext context, int index) {
+                // Calculamos si el planeta es favorito o no
+                bool esFavorito = _esFavorito(
+                  planeta: planetas[index],
+                  planetas: snapshot.data ?? [],
+                );
+                debugPrint(
+                    "${planetas[index].nombre} es favorito: $esFavorito");
+                return ListTile(
+                    title: Text(planetas[index].nombre ?? ""),
+                    trailing: MyStar(
+                      planeta: planetas[index],
+                      esFavorito: esFavorito,
+                      onTap: () {
+                        if (esFavorito) {
+                          favoritosProvider.deletePlanet(planetas[index]);
+                        } else {
+                          favoritosProvider.insertPlanet(planetas[index]);
+                        }
+                      },
+                    ));
+              });
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
+    );
+  }
+
+  bool _esFavorito({required Planeta planeta, required List<Planeta> planetas}) {
+    return planetas.contains(planeta);
+  }
+}
+
+class MyStar extends StatelessWidget {
+  const MyStar({super.key, this.planeta, this.esFavorito, this.onTap});
+
+  final Planeta? planeta;
+  final bool? esFavorito;
+  final Function? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget? star;
+
+    if (esFavorito ?? false) {
+      star = const Icon(Icons.star);
+    } else {
+      star = const Icon(Icons.star_border_outlined);
+    }
+
+    return GestureDetector(
+      child: star,
+      onTap: () {
+        onTap!();
+      },
+    );
+  }
+}
+```
+Y  `main.dart`:
+
+```dart
+void main() {
+  runApp(const MainApp());
+}
+
+class MainApp extends StatelessWidget {
+  const MainApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (BuildContext context) => FavoritosProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Planetas favoritos',
+        home: Scaffold(
+            appBar: AppBar(title: const Text("Planetas Favoritos")),
+            body: ListaPlanetas()),
+      ),
+    );
+  }
+}
+```
+
