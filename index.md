@@ -1,5 +1,14 @@
+
+![Union europea](./images/union_europea.jpeg)  ![Generalitat](./images/generalitat.jpeg) ![Mare Nostrum](./images/mare_nostrum.png)
+
+<br>
+<br>
+
 # Unidad 8. Persistencia en la nube.
 
+![SupabaseFlutter](./images/imagen01.jpg)
+
+<br>
 
 Como vimos en el tema anterior, la persistencia de los datos es una pieza fundamental en el desarrollo de aplicaciones, y en el mismo desarrollamos el almacenamiento local haciendo uso de la librería `Floor`.
 
@@ -7,56 +16,57 @@ La persistencia en la nube se refiere al almacenamiento y gestión de datos en s
 
 En este tema vamos a trabajar con `Supabase`, que es una plataforma de código abierto que proporciona una solución completa para la persistencia en la nube, incluyendo bases de datos, autenticación y capacidades en tiempo real. 
 
-![SupabaseFlutter](./images/imagen01.jpg)
-
-[1. Creación App Ejemplo Flutter Supabase](#_apartado1)
+[1. Introducción a Supabase con Flutter](#_apartado1)
 
 [2. App Planetas](#_apartado2)
 
-[3. Modelo. Clase Planeta](#_apartado3)
+[3. App Students](#_apartado3)
 
-[4. Data Source](#_apartado4)
+<br>
 
-[5. Repositorio y Provider](#_apartado5)
+# <a name="_apartado1"></a>1. Introducción a Supabase con Flutter
 
-[6. Interfaz](#_apartado6)
-
-[7. App Students](#_apartado7)
-
-
-# <a name="_apartado1"></a>1. Creación App Ejemplo Flutter Supabase
-
-[Supabase] (https://supabase.com/) es una plataforma de código abierto que proporciona una solución completa para el desarrollo de aplicaciones backend. Ofrece una serie de servicios integrados que incluyen bases de datos, autenticación, almacenamiento y capacidades en tiempo real, todo gestionado a través de una interfaz intuitiva y fácil de usar.
+[Supabase](https://supabase.com/) es una plataforma de código abierto que proporciona una solución completa para el desarrollo de aplicaciones backend. Ofrece una serie de servicios integrados que incluyen bases de datos, autenticación, almacenamiento y capacidades en tiempo real, todo gestionado a través de una interfaz intuitiva y fácil de usar.
 
 Supabase se basa en PostgreSQL, una de las bases de datos relacionales más robustas y populares, lo que garantiza un rendimiento y una fiabilidad excepcionales. Además, su enfoque en la simplicidad y la accesibilidad lo hace ideal tanto para desarrolladores principiantes como para aquellos con más experiencia.
 
 Entre las características destacadas de Supabase se encuentran:
 
-- Autenticación y Autorización: Gestión de usuarios y permisos de manera segura.
+- **Autenticación y Autorización:** Gestión de usuarios y permisos de manera segura.
   
-- API en Tiempo Real: Sincronización de datos en tiempo real entre el cliente y el servidor
-- Almacenamiento de Archivos: Solución integrada para almacenar y gestionar archivos.
-- Fácil Integración: Compatible con múltiples frameworks y lenguajes de programación, incluyendo Flutter, React, y más.
+- **API en Tiempo Real:** Sincronización de datos en tiempo real entre el cliente y el servidor
+  
+- **Almacenamiento de Archivos:** Solución integrada para almacenar y gestionar archivos.
+
+- **Fácil Integración:** Compatible con múltiples frameworks y lenguajes de programación, incluyendo Flutter, React, y más.
 
 De manera resumida estos podrían ser los pasos para utilizar **Supabase** desde una aplicación **Flutter**:
 
 - Registro en Supabase.
+
 - Creación de un Proyecto: Una vez registrado, crea un nuevo proyecto en el panel de Supabase.
+
 - Crear las tablas de la BD.
+
 - Credenciales: Copia la URL del proyecto y la clave API (anon key).
+
 - Añadir dependencias en Flutter.
+
 - Inicializar Supabase en la aplicación.
+
 - Realizar operaciones CRUD utilizando el cliente Supabase.
 
 Vamos a ver en este apartado los pasos para registrarnos, crear el proyecto y crear la tabla para utilizar a continuación en la aplicación.
 
 ## Registro en Supabase
 
-Tenemos al ir a la web de [Supabase] (https://supabase.com/) pulsaremos *Sign in* o *Start your project* y bien crear un nuevo usuario a partir de un correo, o bien entrar con nuestra cuenta de Github:
+Tenemos al ir a la web de [Supabase](https://supabase.com/) pulsaremos *Sign in* o *Start your project* y bien crear un nuevo usuario a partir de un correo, o bien entrar con nuestra cuenta de Github:
 
 ![SignIn](./images/imagen02.png)
 
-Deberemos crear **la primera vez** una organización:
+<br>
+
+**La primera vez** debemos crear una organización:
 
 ![Organizacion](./images/imagen03.png)
 
@@ -64,10 +74,13 @@ Y ahora crearemos un nuevo proyecto (también la primera vez). Este proyecto con
 
 ![SignIn](./images/imagen04.png)
 
+<br>
+
 Una vez tengamos nuestro proyecto creado vamos a seguir esta guía rápida del propio Supabase en la que nos dirige a través de la creación de un proyecto flutter con una tabla Postgres en Supabase:
 
 [Inicio Flutter Supabase](https://supabase.com/docs/guides/getting-started/quickstarts/flutter)
 
+<br>
 
 # <a name="_apartado1"></a>2. App Planetas
 
@@ -79,15 +92,21 @@ Para crear una nueva tabla en nuestra BD de Supabase tenemos dos opciones. Podem
 
 ![Table SQL](./images/imagen05.png)
 
+<br>
+
 Si hacemos la tabla mediante el Table Editor tendríamos:
 
 ![Table Editor 1](./images/imagen06.png)
 
 como vemos de momento vamos a quitar el **Row Level Security (RLS)** que nos permite hacer cambios en los registros de la tabla sin ningún tipo de restricción de usuario (esto lo tendremos que cambiar más adelante por seguridad).
 
+<br>
+
 Y estos serían los dos únicos campos que va a tener mi tabla:
 
 ![Table Editor 2](./images/imagen07.png)
+
+<br>
 
 También podríamos crear la tabla desde **SQL Editor** con el siguiente código:
 
@@ -98,6 +117,7 @@ create table public.planets (
   constraint planets_pkey primary key (id)
 ) TABLESPACE pg_default;
 ```
+<br>
 
 ## Primeros cambios en la aplicación
 
@@ -109,17 +129,18 @@ Podemos eliminar los siguientes ficheros de la carpeta `model`: `database.dart`,
 
 Mantenemos el resto de ficheros (`planeta.dart, favoritos_respository.dart, favoritos_provider.dart`...).
 
-Además, en fichero `pubspec.yaml` eliminaremos las líneas con las dependencias  `floor`, `floor_generator` y `build_runner`.
+Además, en el fichero `pubspec.yaml` eliminaremos las líneas con las dependencias  `floor`, `floor_generator` y `build_runner`.
 
 E instalaremos la librería `supabase_flutter`:
 
 ```
 flutter pub add supabase_flutter
 ```
+<br>
 
-# <a name="_apartado3"></a>3. Modelo. Clase Planeta
+## Modelo. Clase Planeta
 
-Empezamos a cambiar el código de la aplicación para adaptarlo a Supabase respecto a lo que hacíamos con Floor.
+Empezamos a cambiar el código de la aplicación para **adaptarlo a Supabase** respecto a lo que hacíamos con Floor.
 
 En primer lugar, cambiamos la clase `/model/planeta.dart`, ya que deja de ser una entidad de Floor, pasando a ser una clase que tendrá los campos de la tabla `planets` y le añadimos las funciones que mapean y permiten leer y escribir un registro en esa tabla:
 
@@ -154,7 +175,9 @@ class Planeta {
 }
 ```
 
-# <a name="_apartado4"></a>4. Data Source
+<br>
+
+## Data Source
 
 Vamos a crear en este apartado el código que trabajará con la fuente de datos, en este caso la tabla `planets` de nuestra BD de `Supabase`.
 
@@ -202,8 +225,9 @@ class DataSource {
 
 En este fichero tenemos un cliente de Supabase que se inicializará en el provider (al iniciar la aplicación), y que nos permitirá realizar las operaciones de lectura, inserción y borrado sobre la tabla `planets` (`_tableName`). 
 
+<br>
 
-# <a name="_apartado5"></a>5. Repositorio y Provider
+## Repositorio y Provider
 
 Modificamos levemente `favoritos_repository.dart`, ya que ahora no conectamos con la BD local de Floor, sino con la BD del cliente de Supabase:
 
@@ -273,15 +297,14 @@ class FavoritosProvider with ChangeNotifier {
 
   FavoritosProvider() {
     // En el constructor hacemos una carga de los favoritos
-    _carregaFavoritos();
+    _cargarFavoritos();
   }
 
-  Future<void> _carregaFavoritos() async {
+  Future<void> _cargarFavoritos() async {
     // Esperamos a tener una conexión lista en la BD
     await _repository.connectaDB();
 
-    // Obtenemos el primer elementos del Stream que obtenemos con un findall
-
+    // Obtenemos la lista de favoritos
     final listaFavoritos = await _repository.findAll();
     _favoritos = listaFavoritos!;
     notifyListeners();
@@ -302,8 +325,9 @@ class FavoritosProvider with ChangeNotifier {
   }
 }
 ```
+<br>
 
-# <a name="_apartado6"></a>6. Interfaz de usuario
+## Interfaz de usuario
 
 La interfaz de usuario queda prácticamente igual que la que hicimos en el ejemplo del tema anterior, aunque cambiamos el `StreamBuilder` por un `FutureBuilder`, ya que hicimos eso con el `findAll`.
 
@@ -319,22 +343,22 @@ import 'package:provider/provider.dart';
 class ListaPlanetas extends StatelessWidget {
   ListaPlanetas({super.key});
 
-  // Declarem una llista estàtica de planetes
-  // En la base de dades, només guardarem els favorits
+  // Declaramos una lista estática de planetas
+  // En la base de datos, únicamente guardamos los favoritos
   final List<Planeta> planetas = [
-    Planeta(id: 1, nombre: "Tatooine"),
-    Planeta(id: 2, nombre: "Yavin"),
-    Planeta(id: 3, nombre: "Bespin"),
-    Planeta(id: 4, nombre: "Dagobah"),
-    Planeta(id: 5, nombre: "Endor"),
-    Planeta(id: 6, nombre: "Nevarro"),
-    Planeta(id: 7, nombre: "Corellia"),
-    Planeta(id: 8, nombre: "Mandalore"),
+    Planeta(id: 1, nombre: "Mercurio"),
+    Planeta(id: 2, nombre: "Venus"),
+    Planeta(id: 3, nombre: "Tierra"),
+    Planeta(id: 4, nombre: "Marte"),
+    Planeta(id: 5, nombre: "Júpiter"),
+    Planeta(id: 6, nombre: "Saturno"),
+    Planeta(id: 7, nombre: "Urano"),
+    Planeta(id: 8, nombre: "Neptuno"),
   ];
 
   @override
   Widget build(BuildContext context) {
-    // Definim la referència al Provider
+    // Definimos la referencia al Provider
     var favoritosProvider = Provider.of<FavoritosProvider>(context);
 
     return FutureBuilder<List<Planeta>>(
@@ -435,8 +459,10 @@ class MainApp extends StatelessWidget {
   }
 }
 ```
+<br>
+<br>
 
-# <a name="_apartado7"></a>7. App Students
+# <a name="_apartado3"></a>3. App Students
 
 Vamos en este apartado a ver cómo modificar la app *Students* que implementamos en el tema anterior, tal y como hicimos con la app de *Planetas*, para poder trabajar con una tabla definida de *Supabase*
 
@@ -458,6 +484,7 @@ create table public.students (
   constraint students_pkey primary key (id)
 ) TABLESPACE pg_default;
 ```
+<br>
 
 ## Preparación de la aplicación
 
@@ -471,6 +498,7 @@ En este punto, y partiendo del proyecto que hicimos en el tema 7:
 ```
 flutter pub add supabase_flutter
 ```
+<br>
 
 ## Modelo de datos
 
@@ -494,7 +522,7 @@ class Student {
 
   Map<String, dynamic> toMap() {
     return {
-      //'id': id, Este no se pone ahora por que es autoincremental
+      //'id': id, Este no se pone ahora porque es autoincremental
       'name': name,
       'age': age,};
   }
@@ -502,6 +530,8 @@ class Student {
 ```
 
 Tengamos en cuenta que a la hora de mapear para guardar en la tabla de Supabase, no ponemos el id, ya que este se genera autoincrementalmente, tal y como definimos.
+
+<br>
 
 ## Data Source
 
@@ -515,7 +545,7 @@ class StudentDataSource {
 
   StudentDataSource(this.client);
 
-  // Este es el Stream. No lo he probado, pero debería funcionar.
+  // Este es el Stream. 
   Stream<List<Student>> streamAllStudents() {
     // El método stream devuelve un Stream de la tabla 'students'
     final  response = client.from(_tableName).stream(primaryKey: ['id']);
@@ -557,6 +587,7 @@ class StudentDataSource {
 
 }
 ```
+<br>
 
 ## Repositorio y Provider
 
@@ -613,6 +644,21 @@ class AppRepository {
   }
 }
 ```
+
+Como vemos, para la conexión a nuestro proyecto de supabase necesitamos la **url** y la **clave anon**. 
+
+Para ello, dentro de Supabase, entramos en el proyecto y navegamos con el menú de la izquierda a **Project Settings - Data API**:
+
+![Data API](./images/imagen09.png)
+
+<br>
+
+y para la la **clave anon**:
+
+![Anon Key](./images/imagen10.png)
+
+
+<br>
 
 Quedando el Provider (`/provider/app_provider.dart`) tal y como lo teníamos:
 
@@ -675,5 +721,48 @@ class AppProvider with ChangeNotifier {
   }
 }
 ```
+<br>
+
+**ATENCIÓN**: Os hago una pequeña modificación en el Provider para evitar que llamemos a la base de datos de supabase cada vez que utilizamos la lista de estudiantes (`get listaStudents`). Únicamente refrescamos esta lista cuando es necesario (de momento al insertar y al borrar un estuiante):
+
+```dart
+class AppProvider with ChangeNotifier {
+  final AppRepository _repository = AppRepository();
+  List<Student>? _students;
+
+  AppProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    await _repository.connectaDB();
+    _students = await _repository.getAllStudents();
+    notifyListeners();
+  }
+
+  List<Student>? get listaStudents => _students;
+
+  Future<void> refreshStudents() async {
+    _students = await _repository.getAllStudents();
+    notifyListeners();
+  }
+
+  Future<void> insertStudent(Student student) async {
+    await _repository.insertStudent(student);
+    await refreshStudents(); // refresca tras insertar
+  }
+
+  Future<void> deleteStudent(int id) async {
+    await _repository.deleteStudent(id);
+    await refreshStudents(); // refresca tras borrar
+  }
+}
+```
+
+<br>
+
+## Interfaz
+
+La interfaz de nuestra aplicación en principio no debe cambiar. Es decir, nos vale la interfaz que utilizamos en los ejercicios del tema anterior. Tanto la que utiliza `StreamBuilder` como la que no.
 
 
