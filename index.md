@@ -82,7 +82,7 @@ Una vez tengamos nuestro proyecto creado vamos a seguir esta guía rápida del p
 
 <br>
 
-# <a name="_apartado1"></a>2. App Planetas
+# <a name="_apartado2"></a>2. App Planetas
 
 En este apartado vamos a adaptar la app planetas que trabajamos en el tema anterior de manera que dejemos de trabajar con la librería Floor en una BD local y lo hagamos con una tabla en la BD en la nube que hemos creado con anterioridad.
 
@@ -98,7 +98,7 @@ Si hacemos la tabla mediante el Table Editor tendríamos:
 
 ![Table Editor 1](./images/imagen06.png)
 
-como vemos de momento vamos a quitar el **Row Level Security (RLS)** que nos permite hacer cambios en los registros de la tabla sin ningún tipo de restricción de usuario (esto lo tendremos que cambiar más adelante por seguridad).
+como vemos, de momento vamos a quitar el **Row Level Security (RLS)** que nos permite hacer cambios en los registros de la tabla sin ningún tipo de restricción de usuario (esto lo tendremos que cambiar más adelante por seguridad).
 
 <br>
 
@@ -277,6 +277,20 @@ class FavoritosRepository {
   }
 }
 ```
+
+En nustro código, podemos ver que para la **conexión a nuestro proyecto de supabase** necesitamos la **url** y la **clave anon**. 
+
+Para ello, dentro de Supabase, entramos en el proyecto y navegamos con el menú de la izquierda a **Project Settings - Data API**:
+
+![Data API](./images/imagen09.png)
+
+<br>
+
+y para la la **clave anon**:
+
+![Anon Key](./images/imagen10.png)
+
+<br>
 
 Como vemos cambia la fuente de datos que utilizamos, pero las funciones públicas siguen siendo las mismas que teníamos con Floor: `conectaDB`, `findAll`, `insertPlanet` y `deletePlanet`.
 
@@ -644,19 +658,6 @@ class AppRepository {
   }
 }
 ```
-
-Como vemos, para la conexión a nuestro proyecto de supabase necesitamos la **url** y la **clave anon**. 
-
-Para ello, dentro de Supabase, entramos en el proyecto y navegamos con el menú de la izquierda a **Project Settings - Data API**:
-
-![Data API](./images/imagen09.png)
-
-<br>
-
-y para la la **clave anon**:
-
-![Anon Key](./images/imagen10.png)
-
 
 <br>
 
