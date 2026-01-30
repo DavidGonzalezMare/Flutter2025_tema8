@@ -820,13 +820,13 @@ GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA _pmdm TO anon, authenticated;
 
 ```dart
   final String _schemaName = '_pmdm';
-  final String _tableCourses = 'courses';
+  final String _tableStudents = 'students';
 
   Future<List<Student>> getAllStudents() async {
     try {
       final response = await client
       .schema(_schemaName)    // Aquí indicamos el esquema
-      .from(_tableName)
+      .from(_tableStudents)
       .select()
       .order('id', ascending: true);
 
