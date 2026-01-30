@@ -766,4 +766,79 @@ class AppProvider with ChangeNotifier {
 
 La interfaz de nuestra aplicación en principio no debe cambiar. Es decir, nos vale la interfaz que utilizamos en los ejercicios del tema anterior. Tanto la que utiliza `StreamBuilder` como la que no.
 
+<br>
+
+<hr>
+
+## Trabajo con esquemas en Supabase
+
+La información que hemos visto hasta el momento nos sirve para trabajar con tablas que hayamos creado en el esquema público de Supabase.
+
+Si creáis estas tablas **dentro de un esquema** para tenerlas mejor organizadas:
+
+![Esquema](./images/imagen11.png)
+
+<br>
+
+Para poder trabajar con estas tablas deberemos hacer una serie de pasos:
+
+### Exponer el esquema en la API de Supabase
+
+Para ello iremos a **Project Settings → API** en  Supabase.
+
+En **Exposed schemas**, añaderimos `_pmdm` y guardaremos los cambios:
+
+![Exponer](./images/imagen12.png)
+
+<br>
+
+### Dar permisos a los roles de la API
+
+Debemos dar permiso de uso sobre el esquema y permisos a las tablas para los roles anon y/o authenticated. 
+
+Para ello iremos al SQL Editor de Supabase y escribiremos las siguientes sentencias:
+
+```sql
+-- Permitir uso del esquema
+GRANT USAGE ON SCHEMA _pmdm TO anon, authenticated;
+
+-- Permisos sobre tablas existentes
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA _pmdm TO anon, authenticated;
+
+-- Permisos sobre vistas y secuencias (opcional pero recomendado)
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA _pmdm TO anon, authenticated;
+
+```
+
+![Grant](./images/imagen13.png)
+
+<br>
+
+### Trabajar con el esquema en el cliente de supabase
+
+**Todas las llamadas** que hacemos en el cliente de supabase deberemos indicarle el esquema con el que queremos trabajar siempre y cuando este no sea el esquema `public`:
+
+```dart
+  final String _schemaName = '_pmdm';
+  final String _tableCourses = 'courses';
+
+  Future<List<Student>> getAllStudents() async {
+    try {
+      final response = await client
+      .schema(_schemaName)    // Aquí indicamos el esquema
+      .from(_tableName)
+      .select()
+      .order('id', ascending: true);
+
+      return (response as List).map((user) => Student.fromMap(user)).toList();
+    } catch (e) {
+      print('❌ Error al obtener estudiantes: $e');
+      return [];
+    }
+  }
+```
+
+
+
+
 
